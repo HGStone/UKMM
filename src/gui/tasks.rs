@@ -347,11 +347,8 @@ pub fn import_cemu_settings(core: &Manager, path: &Path) -> Result<Message> {
     let portable = path.join("portable");
     let local_cemu = dirs2::data_local_dir().expect("YIKES").join("Cemu");
     let config_cemu = dirs2::config_dir().expect("YIKES").join("Cemu");
-    let settings_path = if let Some(path) = portable
-        .join("settings.xml")
-        .exists_then()
-    {
-        path
+    let settings_path = if portable.join("settings.xml").exists() {
+        portable.clone()
     } else {
         #[cfg(windows)]
         if let Some(path) = config_cemu.join("settings.xml").exists_then() {
