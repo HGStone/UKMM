@@ -6,7 +6,7 @@ use std::{
     sync::Arc,
 };
 
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use fs_err as fs;
 use http_req::request::RedirectPolicy;
 use join_str::jstr;
@@ -519,16 +519,10 @@ pub fn import_cemu_settings(core: &Manager, path: &Path) -> Result<Message> {
     } else {
         #[cfg(windows)]
         {
-            if let Some(path) = config_cemu.join("graphicPacks").exists_then() {
-                path
-            } else {
-                settings_path.join("graphicPacks")
-            }
+            settings_path.join("graphicPacks")
         }
         #[cfg(not(windows))]
-        {
-            config_cemu.join("graphicPacks")
-        }
+        config_cemu.join("graphicPacks")
     };
     let mut settings = core.settings_mut();
     settings.current_mode = Platform::WiiU;
