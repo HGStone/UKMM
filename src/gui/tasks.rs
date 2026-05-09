@@ -351,9 +351,9 @@ pub fn import_cemu_settings(core: &Manager, path: &Path) -> Result<Message> {
         portable.clone()
     } else {
         #[cfg(windows)]
-        if let Some(path) = config_cemu.join("settings.xml").exists_then() {
+        if let Some(path) = path.join("settings.xml").exists_then() {
             path
-        } else if let Some(path) = path.join("settings.xml").exists_then() {
+        } else if let Some(path) = config_cemu.join("settings.xml").exists_then() {
             path
         } else {
             anyhow::bail!(
@@ -388,10 +388,10 @@ pub fn import_cemu_settings(core: &Manager, path: &Path) -> Result<Message> {
         .or_else(|| {
             #[cfg(windows)]
             {
-                if let Some(path) = config_cemu.join("mlc01").exists_then() {
+                if let Some(path) = path.join("mlc01").exists_then() {
                     Some(path)
                 } else {
-                    path.join("mlc01").exists_then()
+                    config_cemu.join("mlc01").exists_then()
                 }
             }
             #[cfg(not(windows))]
