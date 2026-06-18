@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+**Changed**
+
+- Cleaned up Cemu importer code a bit. Should be slightly faster and less prone
+  to running in circles in rare cases when looking for/reading the title list cache
+- Replaced several bare unwraps with custom panic messages. It's still not the most
+  clear, but it's better than "called Option::unwrap() on a None value"
+
 **Fixed**
 
 - Fixed the Open Emulator button on Windows... again...
