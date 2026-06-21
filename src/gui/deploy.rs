@@ -90,13 +90,31 @@ impl App {
                                                 iter.next().unwrap(),
                                                 iter.collect::<Vec<_>>()
                                             );
-                                            if let Err(e) = std::process::Command::new(cmd)
+                                            match std::process::Command::new(cmd)
                                                 .args(args)
-                                                .status() {
-                                                self.do_update(Message::Error(
-                                                    anyhow::Error::from(e)
-                                                        .context("Failed to run open emulator"),
-                                                ));
+                                                .spawn() {
+                                                Ok(mut child) => {
+                                                    thread::sleep(Duration::from_secs(1));
+                                                    match child.try_wait() {
+                                                        Ok(Some(status)) => if !status.success() {
+                                                            self.do_update(Message::Error(
+                                                                anyhow::anyhow!("Emulator exited with non-zero exit status {status}"),
+                                                            ))
+                                                        },
+                                                        Ok(None) => {}
+                                                        Err(e) =>
+                                                            self.do_update(Message::Error(
+                                                                anyhow::Error::from(e)
+                                                                    .context("There was an error running the emulator"),
+                                                            ))
+                                                    }
+                                                },
+                                                Err(e) => {
+                                                    self.do_update(Message::Error(
+                                                        anyhow::Error::from(e)
+                                                            .context("Failed to open emulator"),
+                                                    ))
+                                                }
                                             }
                                         }
                                     }
