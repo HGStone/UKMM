@@ -47,7 +47,7 @@ pub enum AampDiffEntry {
 
 impl AampDiffEntry {
     pub fn as_mut_sarc(&mut self) -> &mut AampDiffMap {
-        if let AampDiffEntry::Sarc(ref mut map) = self {
+        if let AampDiffEntry::Sarc(map) = self {
             map
         } else {
             panic!("Not a SARC entry")
@@ -107,6 +107,8 @@ struct BnpConverter {
     packs: Arc<DashSet<PathBuf>>,
     parent_packs: DashSet<PathBuf>,
     opt_master_cache: Arc<DashMap<PathBuf, Vec<u8>>>,
+    root_maps: Arc<DashMap<String, Vec<u8>>>,
+    opt_maps: Arc<DashMap<String, Vec<u8>>>,
 }
 
 impl BnpConverter {
@@ -457,6 +459,7 @@ impl BnpConverter {
 
     fn convert(mut self) -> Result<PathBuf> {
         let root = self.current_root.clone();
+        self.set_up_temp_map_state().context("Failed to set up temp map state for root")?;
         self.convert_root()?;
 
         let opt_dir = root.join("options");
@@ -475,10 +478,22 @@ impl BnpConverter {
                         .unwrap_or_default()
                 );
                 self.current_root = option;
+                self.set_up_temp_map_state()
+                    .with_context(|| format!(
+                        "Failed to set up temp map state for {}",
+                        self.current_root.display()
+                    ))?;
                 self.convert_root()?;
+                self.clear_temp_map_state()
+                    .with_context(|| format!(
+                        "Failed to clear temp map state for {}",
+                        self.current_root.display()
+                    ))?;
             }
         }
-        Ok(root)
+        self.current_root = root;
+        self.clear_temp_map_state().context("Failed to clear temp map state for root")?;
+        Ok(self.current_root)
     }
 }
 
@@ -516,6 +531,8 @@ pub fn unpack_bnp(core: &crate::core::Manager, path: &Path) -> Result<PathBuf> {
         current_root: tempdir.clone(),
         path: tempdir.clone(),
         opt_master_cache: Default::default(),
+        root_maps: Default::default(),
+        opt_maps: Default::default(),
     };
     let path = converter.convert()?;
     log::info!("BNP unpacked");
