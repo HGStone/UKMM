@@ -425,7 +425,7 @@ ul#searchresults span.teaser em {
 }
 
 .chapter li {
-    display: flex;
+    display: block;
     color: var(--sidebar-non-existant);
 }
 .chapter li a {
